@@ -1,0 +1,76 @@
+﻿<Window x:Class="Armstrong.WinServer.Views.Graphic"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Armstrong.WinServer.Views"
+             xmlns:oxy="http://oxyplot.org/wpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800" Title="ARMStrong: Chart Module v0.2.1b" WindowState="Maximized" Icon="/ARMStrong;component/Resources/img_plot.ico">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="500*" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="100*" />
+        </Grid.RowDefinitions>
+
+        <Grid x:Name="Chart" Grid.Row="0">
+            <oxy:Plot Margin="15,0,0,0" Name="MainPlot">
+                <oxy:Plot.Axes>
+                    <oxy:DateTimeAxis IntervalType="Auto" Key="MyDateAxis"
+                                  Position="Bottom"
+                                  MajorGridlineStyle="Dash"
+                                  StringFormat="dd/MM/yyyy HH:mm"
+                                  Angle="-20">
+
+                    </oxy:DateTimeAxis>
+
+                    <oxy:LinearAxis Position="Left" IntervalLength="10" Key="MyLineAxis"
+                                    MajorGridlineStyle="Automatic"
+                                    StringFormat="E3"
+                                    AbsoluteMinimum="0">
+
+                    </oxy:LinearAxis>
+                </oxy:Plot.Axes>
+            </oxy:Plot>
+        </Grid>
+
+        <GridSplitter Height="4" Grid.Row="1" 
+                      HorizontalAlignment="Stretch" 
+                      VerticalAlignment="Center" 
+                      ShowsPreview="True"/>
+
+        <Grid x:Name="SeriesInfo" Grid.Row="2">
+            <ListView x:Name="InfoListView">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Т. контр." 
+                                            DisplayMemberBinding="{Binding ChannelName}"
+                                            Width="75"/>
+                        <GridViewColumn Header="Ср. з., мЗв/ч Бк/л" 
+                                            DisplayMemberBinding="{Binding AverageValueSystem, StringFormat='{}{0:E3}'}"
+                                            Width="100"/>
+                        <GridViewColumn Header="Ср. з., мкР/с Кл/л." 
+                                            DisplayMemberBinding="{Binding AverageValueNotSystem, StringFormat='{}{0:E3}'}"
+                                            Width="100"/>
+                        <GridViewColumn Header="Выброс, Бк" 
+                                            DisplayMemberBinding="{Binding BlowoutSystem, StringFormat='{}{0:E3}'}"
+                                            Width="100"/>
+                        <GridViewColumn Header="Выброс, Ки" 
+                                            DisplayMemberBinding="{Binding BlowoutNotSystem, StringFormat='{}{0:E3}'}"
+                                            Width="100"/>
+                        <GridViewColumn Header="Расход" 
+                                            DisplayMemberBinding="{Binding Consumption}"
+                                            Width="100"/>
+                        <GridViewColumn Header="Начало" 
+                                            DisplayMemberBinding="{Binding StartDateTime, StringFormat='{}{0:dd.MM.yyyy HH:mm:sss}'}"
+                                            Width="150"/>
+                        <GridViewColumn Header="Конец" 
+                                            DisplayMemberBinding="{Binding EndDateTime, StringFormat='{}{0:dd.MM.yyyy HH:mm:sss}'}"
+                                            Width="150"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </Grid>
+    </Grid>
+</Window>
