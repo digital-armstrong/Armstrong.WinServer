@@ -28,6 +28,9 @@ namespace Armstrong.WinServer.Classes
             logger.Debug($"Осуществляется попытка выполнить SELECT в таблицу {table}.");
             string serverId = SettingsVariable.GetValue<string>(Constants.SettingName.ServerId);
 
+            if (string.IsNullOrWhiteSpace(serverId))
+                return null;
+
             string query = $"SELECT * FROM {table} WHERE {Map.id_server} = {serverId} ORDER BY {Map.channel_id}";
             string connectionString = SettingsVariable.GetValue(Constants.EnvirovmentVariableName.ConnectionString);
             DataSet dataSet = new DataSet();

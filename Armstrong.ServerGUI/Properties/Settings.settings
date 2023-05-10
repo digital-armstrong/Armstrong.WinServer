@@ -78,7 +78,7 @@
       <Value Profile="(Default)">ARMStrong (v1.1.4-20.rc-4.6 beta) | УИМ-</Value>
     </Setting>
     <Setting Name="serverId" Type="System.String" Scope="User">
-      <Value Profile="(Default)">1</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="hostName" Type="System.String" Scope="User">
       <Value Profile="(Default)">UIM-1</Value>
