@@ -29,8 +29,6 @@ namespace Armstrong.WinServer.Classes
         }
         public static class EnvirovmentVariableName
         {
-            public static string ServerId => "ASRC_SERVER_ID";
-            public static string HostName => "ASRC_HOST_NAME";
             public static string DatabaseHost => "ASRC_SQL_HOST";
             public static string DataBaseName => "ASRC_SQL_DATABASE";
             public static string DatabaseUserID => "ASRC_SQL_USER_ID";
@@ -47,6 +45,8 @@ namespace Armstrong.WinServer.Classes
             public static string ComPortBaudRate => "baudRate";
             public static string TimeToAsk => "timeAsk";
             public static string TimeNewShift => "newShift";
+            public static string ServerId => "serverId";
+            public static string HostName => "hostName";
         }
 
         public static class GridVisibleSettingName

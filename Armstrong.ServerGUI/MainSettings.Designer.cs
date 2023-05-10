@@ -33,6 +33,11 @@ namespace Armstrong.WinServer
             this.serialPort1 = new System.IO.Ports.SerialPort(this.components);
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.hostNameLabel = new System.Windows.Forms.Label();
+            this.hostNameTextBox = new System.Windows.Forms.TextBox();
+            this.serverIdLabel = new System.Windows.Forms.Label();
+            this.serverIdComboBox = new System.Windows.Forms.ComboBox();
             this.testCom_button = new System.Windows.Forms.Button();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.TimeAsk_comboBox = new System.Windows.Forms.ComboBox();
@@ -46,6 +51,7 @@ namespace Armstrong.WinServer
             this.PortName_comboBox = new System.Windows.Forms.ComboBox();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.SuspendLayout();
@@ -57,7 +63,7 @@ namespace Armstrong.WinServer
             this.toolTip1.ReshowDelay = 100;
             this.toolTip1.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
             this.toolTip1.ToolTipTitle = "Информация:";
-            //
+            // 
             // tabControl1
             // 
             this.tabControl1.Controls.Add(this.tabPage1);
@@ -69,6 +75,7 @@ namespace Armstrong.WinServer
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.groupBox1);
             this.tabPage1.Controls.Add(this.testCom_button);
             this.tabPage1.Controls.Add(this.groupBox4);
             this.tabPage1.Controls.Add(this.groupBox3);
@@ -80,9 +87,78 @@ namespace Armstrong.WinServer
             this.tabPage1.Text = "Основные";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.hostNameLabel);
+            this.groupBox1.Controls.Add(this.hostNameTextBox);
+            this.groupBox1.Controls.Add(this.serverIdLabel);
+            this.groupBox1.Controls.Add(this.serverIdComboBox);
+            this.groupBox1.Location = new System.Drawing.Point(6, 6);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(465, 52);
+            this.groupBox1.TabIndex = 5;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Настройки сервера";
+            // 
+            // hostNameLabel
+            // 
+            this.hostNameLabel.AutoSize = true;
+            this.hostNameLabel.Location = new System.Drawing.Point(242, 22);
+            this.hostNameLabel.Name = "hostNameLabel";
+            this.hostNameLabel.Size = new System.Drawing.Size(62, 13);
+            this.hostNameLabel.TabIndex = 3;
+            this.hostNameLabel.Text = "Имя серв.:";
+            // 
+            // hostNameTextBox
+            // 
+            this.hostNameTextBox.Location = new System.Drawing.Point(320, 20);
+            this.hostNameTextBox.Name = "hostNameTextBox";
+            this.hostNameTextBox.Size = new System.Drawing.Size(139, 20);
+            this.hostNameTextBox.TabIndex = 2;
+            this.hostNameTextBox.TextChanged += new System.EventHandler(this.hostNameTextBox_TextChanged);
+            // 
+            // serverIdLabel
+            // 
+            this.serverIdLabel.AutoSize = true;
+            this.serverIdLabel.Location = new System.Drawing.Point(6, 23);
+            this.serverIdLabel.Name = "serverIdLabel";
+            this.serverIdLabel.Size = new System.Drawing.Size(73, 13);
+            this.serverIdLabel.TabIndex = 1;
+            this.serverIdLabel.Text = "Выбор серв.:";
+            // 
+            // serverIdComboBox
+            // 
+            this.serverIdComboBox.FormattingEnabled = true;
+            this.serverIdComboBox.Items.AddRange(new object[] {
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"});
+            this.serverIdComboBox.Location = new System.Drawing.Point(87, 20);
+            this.serverIdComboBox.Name = "serverIdComboBox";
+            this.serverIdComboBox.Size = new System.Drawing.Size(121, 21);
+            this.serverIdComboBox.TabIndex = 0;
+            this.serverIdComboBox.SelectedIndexChanged += new System.EventHandler(this.serverIdComboBox_SelectedIndexChanged);
+            // 
             // testCom_button
             // 
-            this.testCom_button.Location = new System.Drawing.Point(248, 71);
+            this.testCom_button.Location = new System.Drawing.Point(248, 127);
             this.testCom_button.Name = "testCom_button";
             this.testCom_button.Size = new System.Drawing.Size(223, 31);
             this.testCom_button.TabIndex = 4;
@@ -96,9 +172,9 @@ namespace Armstrong.WinServer
             this.groupBox4.Controls.Add(this.NewShift_comboBox);
             this.groupBox4.Controls.Add(this.newShift_Label);
             this.groupBox4.Controls.Add(this.timeAsk_Label);
-            this.groupBox4.Location = new System.Drawing.Point(6, 64);
+            this.groupBox4.Location = new System.Drawing.Point(6, 122);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(236, 178);
+            this.groupBox4.Size = new System.Drawing.Size(236, 109);
             this.groupBox4.TabIndex = 3;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Общая конфигурация СРК";
@@ -232,7 +308,7 @@ namespace Armstrong.WinServer
             this.groupBox3.Controls.Add(this.BaudRate_comboBox);
             this.groupBox3.Controls.Add(this.comPort_Label);
             this.groupBox3.Controls.Add(this.PortName_comboBox);
-            this.groupBox3.Location = new System.Drawing.Point(6, 6);
+            this.groupBox3.Location = new System.Drawing.Point(6, 64);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(465, 52);
             this.groupBox3.TabIndex = 2;
@@ -295,7 +371,7 @@ namespace Armstrong.WinServer
             this.PortName_comboBox.TabIndex = 0;
             this.PortName_comboBox.SelectedIndexChanged += new System.EventHandler(this.PortName_comboBox_SelectedIndexChanged);
             // 
-            // Options
+            // MainSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -304,18 +380,21 @@ namespace Armstrong.WinServer
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "Options";
+            this.Name = "MainSettings";
             this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Настройки";
             this.Load += new System.EventHandler(this.MainSettings_Load);
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.ResumeLayout(false);
+
         }
 
         #endregion
@@ -334,5 +413,10 @@ namespace Armstrong.WinServer
         private System.Windows.Forms.Label baudRate_label;
         private System.Windows.Forms.ComboBox BaudRate_comboBox;
         private System.Windows.Forms.ComboBox TimeAsk_comboBox;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.ComboBox serverIdComboBox;
+        private System.Windows.Forms.Label serverIdLabel;
+        private System.Windows.Forms.Label hostNameLabel;
+        private System.Windows.Forms.TextBox hostNameTextBox;
     }
 }
