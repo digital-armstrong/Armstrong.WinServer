@@ -1,15 +1,15 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="RR_SRC_106.Properties" GeneratedClassName="Settings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Armstrong.WinServer.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
     <Setting Name="comPort" Type="System.String" Scope="User">
       <Value Profile="(Default)">COM5</Value>
     </Setting>
     <Setting Name="timeAsk" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">4</Value>
+      <Value Profile="(Default)">40</Value>
     </Setting>
     <Setting Name="newShift" Type="System.String" Scope="User">
-      <Value Profile="(Default)">00:00:00</Value>
+      <Value Profile="(Default)">06:00:00</Value>
     </Setting>
     <Setting Name="baudRate" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">9600</Value>
@@ -76,6 +76,12 @@
     </Setting>
     <Setting Name="mainFormTitle" Type="System.String" Scope="User">
       <Value Profile="(Default)">ARMStrong (v1.1.4-20.rc-4.6 beta) | УИМ-</Value>
+    </Setting>
+    <Setting Name="serverId" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="hostName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">UIM-1</Value>
     </Setting>
   </Settings>
 </SettingsFile>

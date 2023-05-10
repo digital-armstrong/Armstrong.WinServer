@@ -658,7 +658,7 @@ namespace Armstrong.WinServer
             this.Name = "MainForm";
             this.Text = $"{Application.ProductName} | " +
                 $"{SettingsVariable.GetValue<string>(Constants.SettingName.ComPortName)} | " +
-                $"{SettingsVariable.GetValue(Constants.EnvirovmentVariableName.HostName)}";
+                $"{SettingsVariable.GetValue<string>(Constants.SettingName.HostName)}";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Shown += new System.EventHandler(this.MainForm_Shown);

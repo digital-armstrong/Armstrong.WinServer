@@ -1,12 +1,11 @@
+using Armstrong.WinServer.Models;
 using NLog;
+using Npgsql;
 using System;
 using System.Data;
 using System.Diagnostics;
-using System.IO;
-using System.Windows.Forms;
-using Npgsql;
 using System.Threading;
-using Armstrong.WinServer.Models;
+using System.Windows.Forms;
 
 namespace Armstrong.WinServer.Classes
 {
@@ -27,7 +26,7 @@ namespace Armstrong.WinServer.Classes
         public DataSet Select(string table)
         {
             logger.Debug($"Осуществляется попытка выполнить SELECT в таблицу {table}.");
-            string serverId = SettingsVariable.GetValue(Constants.EnvirovmentVariableName.ServerId);
+            string serverId = SettingsVariable.GetValue<string>(Constants.SettingName.ServerId);
 
             string query = $"SELECT * FROM {table} WHERE {Map.id_server} = {serverId} ORDER BY {Map.channel_id}";
             string connectionString = SettingsVariable.GetValue(Constants.EnvirovmentVariableName.ConnectionString);
@@ -48,15 +47,15 @@ namespace Armstrong.WinServer.Classes
                 logger.Debug($"--- Время выполнения запроса и получения данных: {stopwatch.ElapsedMilliseconds} милисекунд.");
 
 
-                this.connectionErrorCount = 0;
+                connectionErrorCount = 0;
                 return dataSet;
             }
             catch (Exception e)
             {
-                this.connectionErrorCount += 1;
+                connectionErrorCount += 1;
 
-                logger.Error(e, $"SQL: Неудачная попытка подключения №{this.connectionErrorCount}");
-                if (this.connectionErrorCount > 3)
+                logger.Error(e, $"SQL: Неудачная попытка подключения №{connectionErrorCount}");
+                if (connectionErrorCount > 3)
                 {
                     MessageBox.Show("Неудачная попытка подключения к PostgreSQL\n" + e.StackTrace);
                     return null;
@@ -64,7 +63,7 @@ namespace Armstrong.WinServer.Classes
                 else
                 {
                     Thread.Sleep(10000);
-                    this.Select(table);
+                    Select(table);
                 }
 
                 return null;
@@ -97,15 +96,15 @@ namespace Armstrong.WinServer.Classes
                 logger.Debug("--- Соединение успешно закрыто.");
                 logger.Debug($"--- Время выполнения запроса и получения данных: {stopwatch.ElapsedMilliseconds} милисекунд.");
 
-                this.connectionErrorCount = 0;
+                connectionErrorCount = 0;
                 return dataSet;
             }
             catch (Exception e)
             {
-                this.connectionErrorCount += 1;
+                connectionErrorCount += 1;
 
-                logger.Error(e, $"SQL: Неудачная попытка подключения №{this.connectionErrorCount}");
-                if (this.connectionErrorCount > 3)
+                logger.Error(e, $"SQL: Неудачная попытка подключения №{connectionErrorCount}");
+                if (connectionErrorCount > 3)
                 {
                     MessageBox.Show("Неудачная попытка подключения к PostgreSQL\n" + e.StackTrace);
                     return null;
@@ -113,7 +112,7 @@ namespace Armstrong.WinServer.Classes
                 else
                 {
                     Thread.Sleep(10000);
-                    this.SelectWithQuery(query);
+                    SelectWithQuery(query);
                 }
 
                 return null;
@@ -141,17 +140,17 @@ namespace Armstrong.WinServer.Classes
             }
             catch (Exception e)
             {
-                this.connectionErrorCount += 1;
+                connectionErrorCount += 1;
 
-                logger.Error(e, $"SQL: Неудачная попытка подключения №{this.connectionErrorCount}");
-                if (this.connectionErrorCount > 3)
+                logger.Error(e, $"SQL: Неудачная попытка подключения №{connectionErrorCount}");
+                if (connectionErrorCount > 3)
                 {
                     MessageBox.Show("Неудачная попытка подключения к PostgreSQL\n" + e.StackTrace);
                     return;
                 }
 
                 Thread.Sleep(10000);
-                this.Insert(table, id, value, date);
+                Insert(table, id, value, date);
             }
 
             saveHistory.Parameters.Add("@value", NpgsqlTypes.NpgsqlDbType.Double);
@@ -165,19 +164,19 @@ namespace Armstrong.WinServer.Classes
             }
             catch (Exception e)
             {
-                this.connectionErrorCount += 1;
-                logger.Error(e, $"SQL: ошибка сохоранения истории №{this.connectionErrorCount}");
-                if (this.connectionErrorCount > 3)
+                connectionErrorCount += 1;
+                logger.Error(e, $"SQL: ошибка сохоранения истории №{connectionErrorCount}");
+                if (connectionErrorCount > 3)
                 {
                     MessageBox.Show("Ошибка при сохранении изменений в Sql db. \n\nОписание ошибки:\n\n" + e.ToString());
                     return;
                 }
 
                 Thread.Sleep(10000);
-                this.Insert(table, id, value, date);
+                Insert(table, id, value, date);
             }
 
-            this.connectionErrorCount = 0;
+            connectionErrorCount = 0;
             connection.Close();
             connection.Dispose();
         }
@@ -228,17 +227,17 @@ namespace Armstrong.WinServer.Classes
             }
             catch (Exception e)
             {
-                this.connectionErrorCount += 1;
+                connectionErrorCount += 1;
 
-                logger.Error(e, $"SQL: Неудачная попытка подключения №{this.connectionErrorCount}");
-                if (this.connectionErrorCount > 3)
+                logger.Error(e, $"SQL: Неудачная попытка подключения №{connectionErrorCount}");
+                if (connectionErrorCount > 3)
                 {
                     MessageBox.Show("Неудачная попытка подключения к PostgreSQL\n" + e.StackTrace);
                     return;
                 }
 
                 Thread.Sleep(10000);
-                this.Insert(columnNameString,
+                Insert(columnNameString,
                             valuesString,
                             coefficientParameter,
                             preAccidentParameter,
@@ -252,16 +251,16 @@ namespace Armstrong.WinServer.Classes
             }
             catch (Exception e)
             {
-                this.connectionErrorCount += 1;
-                logger.Error(e, $"SQL: ошибка сохоранения истории №{this.connectionErrorCount}");
-                if (this.connectionErrorCount > 3)
+                connectionErrorCount += 1;
+                logger.Error(e, $"SQL: ошибка сохоранения истории №{connectionErrorCount}");
+                if (connectionErrorCount > 3)
                 {
                     MessageBox.Show("Ошибка при сохранении изменений в Sql db. \n\nОписание ошибки:\n\n" + e.ToString());
                     return;
                 }
 
                 Thread.Sleep(10000);
-                this.Insert(columnNameString,
+                Insert(columnNameString,
                             valuesString,
                             coefficientParameter,
                             preAccidentParameter,
@@ -270,7 +269,7 @@ namespace Armstrong.WinServer.Classes
                             maxParameter);
             }
 
-            this.connectionErrorCount = 0;
+            connectionErrorCount = 0;
             connection.Close();
             connection.Dispose();
         }
@@ -324,17 +323,17 @@ namespace Armstrong.WinServer.Classes
             }
             catch (Exception e)
             {
-                this.connectionErrorCount += 1;
+                connectionErrorCount += 1;
 
-                logger.Error(e, $"SQL: Неудачная попытка подключения №{this.connectionErrorCount}");
-                if (this.connectionErrorCount > 3)
+                logger.Error(e, $"SQL: Неудачная попытка подключения №{connectionErrorCount}");
+                if (connectionErrorCount > 3)
                 {
                     MessageBox.Show("Неудачная попытка подключения к PostgreSQL\n" + e.StackTrace);
                     return;
                 }
 
                 Thread.Sleep(10000);
-                this.Update(updater);
+                Update(updater);
             }
 
             updateMonitor.Parameters.Add("@system_value", NpgsqlTypes.NpgsqlDbType.Double);
@@ -353,19 +352,19 @@ namespace Armstrong.WinServer.Classes
             }
             catch (Exception e)
             {
-                this.connectionErrorCount += 1;
-                logger.Error(e, $"SQL: ошибка сохоранения истории №{this.connectionErrorCount}");
-                if (this.connectionErrorCount > 3)
+                connectionErrorCount += 1;
+                logger.Error(e, $"SQL: ошибка сохоранения истории №{connectionErrorCount}");
+                if (connectionErrorCount > 3)
                 {
                     MessageBox.Show("Ошибка при сохранении изменений в Sql db. \n\nОписание ошибки:\n\n" + e.ToString());
                     return;
                 }
 
                 Thread.Sleep(10000);
-                this.Update(updater);
+                Update(updater);
             }
 
-            this.connectionErrorCount = 0;
+            connectionErrorCount = 0;
             connection.Close();
             connection.Dispose();
         }
