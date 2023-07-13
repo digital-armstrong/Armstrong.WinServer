@@ -137,8 +137,9 @@ namespace Armstrong.WinServer
                     break;
             }
 
-            string columnNameString = $"{Map.channel_id}, {Map.id_server}, {Map.control_point}, {Map.block_name}, {Map.block_location}, {Map.value_system}, {Map.event_date}, {Map.channel_power_state}, {Map.channel_coefficient}, {Map.channel_pre_accident}, {Map.channel_accident}, {Map.block_type}, {Map.channel_value_unic_count}, {Map.value_impulses}, {Map.channel_value_error_count}, {Map.channel_state}, {Map.block_min_nuclid}, {Map.block_max_nuclid}";
-            string valuesString = @"" + id + ", " + idServer_ComboBox.Text + ", '" + nameControlPoint_TBox.Text + "', '" + nameDb_ComboBox.Text + "', '" + nameLocation_TextBox.Text + "', 0, '" + DateTime.Now.ToString() + "', " + onOff + ", @coefficient, @pre_accident, @accident, " + type + ", 0, 0, 0, 3, @min_nuclid_value, @max_nuclid_value";
+            // FIX: перебрать формирование запроса, это прочитать нереально
+            string columnNameString = $"{Map.channel_id}, {Map.id_server}, {Map.control_point}, {Map.block_name}, {Map.block_location}, {Map.value_system}, {Map.channel_power_state}, {Map.channel_coefficient}, {Map.channel_pre_accident}, {Map.channel_accident}, {Map.block_type}, {Map.channel_value_unic_count}, {Map.value_impulses}, {Map.channel_value_error_count}, {Map.channel_state}, {Map.block_min_nuclid}, {Map.block_max_nuclid}";
+            string valuesString = @"" + id + ", " + idServer_ComboBox.Text + ", '" + nameControlPoint_TBox.Text + "', '" + nameDb_ComboBox.Text + "', '" + nameLocation_TextBox.Text + "', 0, " + onOff + ", @coefficient, @pre_accident, @accident, " + type + ", 0, 0, 0, 3, @min_nuclid_value, @max_nuclid_value";
 
 
             sql.Insert(columnNameString, valuesString, coefficientParameter, preAccidentParameter, accidentParameter, minParameter, maxParameter);

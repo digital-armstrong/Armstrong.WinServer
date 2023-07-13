@@ -223,6 +223,8 @@ namespace Armstrong.WinServer.Classes
             command.Parameters.Add("@max_nuclid_value", NpgsqlTypes.NpgsqlDbType.Double);
             command.Parameters[4].Value = maxParameter;
 
+            command.Parameters.Add("@date", NpgsqlTypes.NpgsqlDbType.Timestamp);
+            command.Parameters[5].Value = DateTime.Now;
 
             try
             {
