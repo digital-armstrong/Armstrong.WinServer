@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Armstrong.WinServer.Models;
+using NLog;
+using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
-using NLog;
 
 namespace Armstrong.WinServer.Classes
 {
@@ -10,7 +11,7 @@ namespace Armstrong.WinServer.Classes
     {
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         private readonly PackagesInitialization packInit = new PackagesInitialization();
-        private readonly ComPort comPort = new ComPort();             
+        private readonly ComPort comPort = new ComPort();
 
         /// <summary>
         /// Осуществляет перемотку ленты в группе блоков детектирования с лентопротяжным механизмом.
@@ -19,6 +20,7 @@ namespace Armstrong.WinServer.Classes
         /// <param name="address">Список адресов блоков детектирования.</param>
         public void Rewind(SerialPort serialPort, List<int> address)
         {
+            var sendedMsg = new DialogMessage();
             logger.Debug("Осуществляется попытка отправки пакетов перемотки кадра каналов из списка.");
 
             var packages = packInit.GeneratePackages(address, Function.StartService, Operation.Write, ActionType.Rewind);
@@ -29,7 +31,7 @@ namespace Armstrong.WinServer.Classes
                 for (int i = 0; i < packages.Count(); i++)
                 {
                     logger.Debug($"------ Отправка команды перемотки [{BitConverter.ToString(packages[i])}] на канал {packages[i][0]}.");
-                    comPort.Inquiry(serialPort, packages, i);
+                    sendedMsg = comPort.Inquiry(serialPort, packages, i);
                     logger.Debug($"------ Канал {packages[i][0]} - успешно.");
                 }
             }
@@ -42,7 +44,7 @@ namespace Armstrong.WinServer.Classes
                 for (int i = 0; i < packages.Count(); i++)
                 {
                     logger.Debug($"------ Попытка отправки команды перемотки [{BitConverter.ToString(packages[i])}] на канал {packages[i][0]}.");
-                    comPort.Inquiry(serialPort, packages, i);
+                    sendedMsg = comPort.Inquiry(serialPort, packages, i);
                     logger.Debug($"------ Канал {packages[i][0]} - успешно.");
                 }
                 logger.Debug($"--- Попытка закрыть порт {serialPort.PortName}.");
@@ -61,6 +63,8 @@ namespace Armstrong.WinServer.Classes
         {
             logger.Debug($"Осуществляется перемотка ленты канала: {address}.");
 
+            var sendedMsg = new DialogMessage();
+
             var package = packInit.GeneratePackages(address, Function.StartService, Operation.Write, ActionType.Rewind);
             if (serialPort.IsOpen)
             {
@@ -69,7 +73,7 @@ namespace Armstrong.WinServer.Classes
                 for (var i = 0; i < package.Count(); i++)
                 {
                     logger.Debug($"------ Попытка отправки команды перемотки [{BitConverter.ToString(package[0])}] на канал {address}.");
-                    comPort.Inquiry(serialPort, package, i);
+                    sendedMsg = comPort.Inquiry(serialPort, package, i);
                     logger.Debug($"------ Канал {address} - успешно.");
                 }
             }
@@ -82,7 +86,7 @@ namespace Armstrong.WinServer.Classes
                 for (var i = 0; i < package.Count(); i++)
                 {
                     logger.Debug($"------ Попытка отправки команды перемотки [{BitConverter.ToString(package[0])}] на канал {address}.");
-                    comPort.Inquiry(serialPort, package, i);
+                    sendedMsg = comPort.Inquiry(serialPort, package, i);
                     logger.Debug($"------ Канал {address} - успешно.");
                 }
                 logger.Debug($"--- Попытка закрыть порт {serialPort.PortName}.");
@@ -100,10 +104,13 @@ namespace Armstrong.WinServer.Classes
         public void OpenBlenker(SerialPort serialPort, List<int> address)
         {
             logger.Debug($"Осуществляется открытие бленкера канала: {address}.");
+            var sendedMsg = new DialogMessage();
 
             var packages = packInit.GeneratePackages(address, Function.StartService, Operation.Write, ActionType.OpenBlenker);
             for (int i = 0; i < packages.Count(); i++)
-                comPort.Inquiry(serialPort, packages, i);
+            {
+                sendedMsg = comPort.Inquiry(serialPort, packages, i);
+            }
         }
     }
 }

@@ -1,16 +1,16 @@
+using Armstrong.WinServer.Classes;
+using Armstrong.WinServer.Models;
+using Armstrong.WinServer.Properties;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.IO.Ports;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Armstrong.WinServer.Properties;
-using Armstrong.WinServer.Classes;
-using NLog;
-using System.Reflection;
-using Armstrong.WinServer.Models;
 
 namespace Armstrong.WinServer
 {
@@ -68,7 +68,7 @@ namespace Armstrong.WinServer
         {
             // Заполнить DataGridWiew в отдельном потоке
             StartExecute();
-            treeView1.Enabled = false;
+            packagesTextBox1.Enabled = true;
 
             var dgvColumns = dataGridView1.Columns;
             dgvColumns[Map.channel_global_id].DataPropertyName = Map.channel_global_id;
@@ -177,7 +177,9 @@ namespace Armstrong.WinServer
                 Thread.Sleep(60000);
 
                 foreach (int address in addressList)
+                {
                     logger.Info("System: успешная перемотка ленты канала {0}", address);
+                }
 
                 if (serialPort.IsOpen)
                 {
@@ -222,7 +224,6 @@ namespace Armstrong.WinServer
                 logger.Debug("Запущен поток опроса каналов.");
                 try
                 {
-                    double impulses;
                     string portName = SettingsVariable.GetValue<string>(Constants.SettingName.ComPortName);
                     string historyTable = SettingsVariable.GetValue(Constants.EnvirovmentVariableName.HistoryTable);
                     int baudRate = SettingsVariable.GetValue<int>(Constants.SettingName.ComPortBaudRate);
@@ -238,31 +239,54 @@ namespace Armstrong.WinServer
 
                         StopExecute();
 
-                        StopExecute();
-
                         Invoke((MethodInvoker)delegate
                         {
                             toolStripStatusLabel1.Text = "Приложение остановлено: COMPORT-ERROR";
                         });
 
                         if (token.IsCancellationRequested)
+                        {
                             throw new TaskCanceledException(SerialPortTask);
+                        }
                     }
 
                     logger.Debug("Запускается цикл опроса...");
                     while (serialPort.IsOpen)
                     {
                         if (token.IsCancellationRequested)
+                        {
                             throw new TaskCanceledException(SerialPortTask);
+                        }
 
                         for (int i = 0; i < dataSet.Tables[dsTableName].Rows.Count; i++)
                         {
                             if ((int)dataSet.Tables[dsTableName].Rows[i][Map.channel_power_state] == DetectorsInfo.Power_OFF)
+                            {
                                 continue;
+                            }
 
-                            comPort.Inquiry(serialPort, valuePackages, i);
-                            impulses = comPort.Answer(serialPort, i + 1);
-                            var state = comPort.Processing(dataSet, i, impulses);
+                            var receiveMsg = new DialogMessage();
+                            var sendedMsg = new DialogMessage();
+
+                            sendedMsg = comPort.Inquiry(serialPort, valuePackages, i);
+
+                            Invoke((MethodInvoker)delegate
+                            {
+                                packagesTextBox1.SelectionColor = sendedMsg.TextColor;
+                                packagesTextBox1.AppendText($"\r\nStatus:\t{sendedMsg.MessageType},\r\nMessage:\t{sendedMsg.MessageText}");
+                                packagesTextBox1.AppendText($"\r\n{sendedMsg.PackageText}\r\n");
+                            });
+
+                            receiveMsg = comPort.Answer(serialPort, i + 1);
+
+                            Invoke((MethodInvoker)delegate
+                            {
+                                packagesTextBox1.SelectionColor = receiveMsg.TextColor;
+                                packagesTextBox1.AppendText($"\r\nStatus:\t{receiveMsg.MessageType},\r\nMessage:\t{receiveMsg.MessageText}");
+                                packagesTextBox1.AppendText($"\r\n{receiveMsg.PackageText}\r\n");
+                            });
+
+                            var state = comPort.Processing(dataSet, i, receiveMsg.Value);
 
                             // Light alarm
                             // 0 -- Non-unique value, 1 -- accident (R), 2 -- pre-accident (Y), 3 -- normal (G), 8 -- device failure (off)
@@ -272,23 +296,71 @@ namespace Armstrong.WinServer
                                     break;
                                 case DetectorsInfo.StateAccident:
                                     if ((bool)dataSet.Tables[dsTableName].Rows[i][Map.channel_special_control])
-                                        comPort.Inquiry(serialPort, SendSpecialSignal, i);
+                                    {
+                                        sendedMsg = comPort.Inquiry(serialPort, SendSpecialSignal, i);
+
+                                        Invoke((MethodInvoker)delegate
+                                        {
+                                            packagesTextBox1.SelectionColor = sendedMsg.TextColor;
+                                            packagesTextBox1.AppendText($"\r\nStatus:\t{sendedMsg.MessageType},\r\nMessage:\t{sendedMsg.MessageText}");
+                                            packagesTextBox1.AppendText($"\r\n{sendedMsg.PackageText}");
+                                        });
+                                    }
                                     else
-                                        comPort.Inquiry(serialPort, ledRED, i);
+                                    {
+                                        sendedMsg = comPort.Inquiry(serialPort, ledRED, i);
+
+                                        Invoke((MethodInvoker)delegate
+                                        {
+                                            packagesTextBox1.SelectionColor = sendedMsg.TextColor;
+                                            packagesTextBox1.AppendText($"\r\nStatus:\t{sendedMsg.MessageType},\r\nMessage:\t{sendedMsg.MessageText}");
+                                            packagesTextBox1.AppendText($"\r\n{sendedMsg.PackageText}");
+                                        });
+                                    }
+
                                     break;
                                 case DetectorsInfo.StatePreAccident:
-                                    comPort.Inquiry(serialPort, ledYEL, i);
+                                    sendedMsg = comPort.Inquiry(serialPort, ledYEL, i);
+
+                                    Invoke((MethodInvoker)delegate
+                                    {
+                                        packagesTextBox1.SelectionColor = sendedMsg.TextColor;
+                                        packagesTextBox1.AppendText($"\r\nStatus:\t{sendedMsg.MessageType},\r\nMessage:\t{sendedMsg.MessageText}");
+                                        packagesTextBox1.AppendText($"\r\n{sendedMsg.PackageText}");
+                                    });
+
                                     break;
                                 case DetectorsInfo.StateNormal:
-                                    comPort.Inquiry(serialPort, ledGRN, i);
+                                    sendedMsg = comPort.Inquiry(serialPort, ledGRN, i);
+
+                                    Invoke((MethodInvoker)delegate
+                                    {
+                                        packagesTextBox1.SelectionColor = sendedMsg.TextColor;
+                                        packagesTextBox1.AppendText($"\r\nStatus:\t{sendedMsg.MessageType},\r\nMessage:\t{sendedMsg.MessageText}");
+                                        packagesTextBox1.AppendText($"\r\n{sendedMsg.PackageText}");
+                                    });
+
                                     break;
                                 case DetectorsInfo.StateOffline:
-                                    comPort.Inquiry(serialPort, ledOFF, i);
+                                    sendedMsg = comPort.Inquiry(serialPort, ledOFF, i);
+
+                                    Invoke((MethodInvoker)delegate
+                                    {
+                                        packagesTextBox1.SelectionColor = sendedMsg.TextColor;
+                                        packagesTextBox1.AppendText($"\r\nStatus:\t{sendedMsg.MessageType},\r\nMessage:\t{sendedMsg.MessageText}");
+                                        packagesTextBox1.AppendText($"\r\n{sendedMsg.PackageText}");
+                                    });
+
                                     break;
                             }
                         }
 
-                        foreach (DataRow row in this.dataSet.Tables[this.dsTableName].Rows)
+                        Invoke((MethodInvoker)delegate
+                        {
+                            packagesTextBox1.AppendText("\r\n");
+                        });
+
+                        foreach (DataRow row in dataSet.Tables[dsTableName].Rows)
                         {
                             int id = Convert.ToInt32(row[Map.channel_global_id]);
                             int count = (int)row[Map.channel_value_unic_count];
@@ -317,10 +389,10 @@ namespace Armstrong.WinServer
 
                             if (impulsesValue != 0)
                             {
-                                this.sql.Insert(historyTable, id, systemValue, dateTime);
+                                sql.Insert(historyTable, id, systemValue, dateTime);
                             }
 
-                            this.sql.Update(updater);
+                            sql.Update(updater);
                         }
 
                         int timeToAsk = (int)SettingsVariable.GetValue<float>(Constants.SettingName.TimeToAsk);
@@ -328,7 +400,9 @@ namespace Armstrong.WinServer
                         for (int i = 0; i < timeToAsk; i++)
                         {
                             if (token.IsCancellationRequested)
+                            {
                                 throw new TaskCanceledException(SerialPortTask);
+                            }
 
                             Thread.Sleep(1000);
                         }
@@ -341,7 +415,7 @@ namespace Armstrong.WinServer
                 {
                     logger.Debug($"{MethodBase.GetCurrentMethod().Name}:Задача была прервана");
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     logger.Debug(e);
                 }
@@ -403,7 +477,9 @@ namespace Armstrong.WinServer
                 try
                 {
                     if (token.IsCancellationRequested)
+                    {
                         throw new TaskCanceledException(task);
+                    }
 
                     int count = 0;
                     if (dataSet.Tables.Count > 0)
@@ -456,7 +532,9 @@ namespace Armstrong.WinServer
                             dataSet.Tables[dsTableName].Rows[i][Map.value_not_system] = 0;
 
                             if ((bool)dataSet.Tables[dsTableName].Rows[i][Map.channel_special_control])
+                            {
                                 dataGridView1.Rows[i].Cells[Map.channel_special_control].Value = true;
+                            }
 
                             switch ((int)dataSet.Tables[dsTableName].Rows[i][Map.channel_state])
                             {
@@ -497,7 +575,7 @@ namespace Armstrong.WinServer
             // 1. Остановить поток опроса
             // 2. Закрыть COM-port
             // 3. Сообщить приложению, что будет совершен респринг (restart = true)
-            
+
             logger.Debug("Вызвано метод настроек приложения.");
 
             StopExecute();
@@ -546,7 +624,9 @@ namespace Armstrong.WinServer
                 }
             }
             else
+            {
                 return;
+            }
         });
 
         // Кнопка Настройки в верхней панели
@@ -664,7 +744,7 @@ namespace Armstrong.WinServer
             });
 
             int address = (int)dataGridView1.SelectedRows[0].Cells[Map.channel_id].Value;
-            var channelGlobalId = Convert.ToInt32(this.dataGridView1.SelectedRows[0].Cells[Map.channel_global_id].Value);
+            var channelGlobalId = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells[Map.channel_global_id].Value);
 
             string historyTable = SettingsVariable.GetValue(Constants.EnvirovmentVariableName.HistoryTable);
             sql.Insert(table: historyTable, id: channelGlobalId, value: 0, date: DateTime.Now);
@@ -697,6 +777,8 @@ namespace Armstrong.WinServer
             var id = (int)dataGridView1.SelectedRows[0].Cells[Map.channel_id].Value;
             logger.Debug($"Вызван метод проверки спец. сигнала канала {id}");
 
+            var sendedMsg = new DialogMessage();
+
             StopExecute();
 
             Invoke((MethodInvoker)delegate
@@ -726,17 +808,19 @@ namespace Armstrong.WinServer
             task = Task.Run(() =>
             {
                 if (!serialPort.IsOpen)
+                {
                     serialPort.Open();
+                }
 
                 id--; // так как нумерация каналов с 1, а нумерация в списке/dgv/массивве с 0
 
                 for (int i = 0; i < 3; i++)
                 {
-                    comPort.Inquiry(serialPort, SendSpecialSignal, id);
+                    sendedMsg = comPort.Inquiry(serialPort, SendSpecialSignal, id);
                     dataSet.Tables[dsTableName].Rows[id][Map.channel_image_state] = Resources.accident_state;
                     Thread.Sleep(500);
 
-                    comPort.Inquiry(serialPort, ledGRN, id);
+                    sendedMsg = comPort.Inquiry(serialPort, ledGRN, id);
                     dataSet.Tables[dsTableName].Rows[id][Map.channel_image_state] = Resources.normal_state;
                     Thread.Sleep(500);
                 }
@@ -899,11 +983,11 @@ namespace Armstrong.WinServer
         {
             logger.Debug("Вызвано окно \"Вид\".");
             GridVision gridVision = new GridVision(this);
-            this.AddOwnedForm(gridVision);
+            AddOwnedForm(gridVision);
             gridVision.Show();
         }
         #endregion
-        
+
         // Selecting rows with Right Mouse Button Click
         private void DataGridView1_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
         {
@@ -925,8 +1009,11 @@ namespace Armstrong.WinServer
             switch (dataGridView1.SelectedRows.Count != 1)
             {
                 case true:
-                    for(int i = 0; i < dataGridView1.SelectedRows.Count; i++)
+                    for (int i = 0; i < dataGridView1.SelectedRows.Count; i++)
+                    {
                         selectedId.Add(Convert.ToInt32(dataGridView1.SelectedRows[i].Cells[Map.channel_global_id].Value));
+                    }
+
                     break;
                 case false:
                     selectedId.Add(Convert.ToInt32(dataGridView1.SelectedRows[0].Cells[Map.channel_global_id].Value));
@@ -965,6 +1052,8 @@ namespace Armstrong.WinServer
         {
             logger.Debug("Выполняется закрытие приложения...");
 
+            var sendedMsg = new DialogMessage();
+
             StopExecute();
 
             await AwaitStopExecute();
@@ -972,13 +1061,17 @@ namespace Armstrong.WinServer
             logger.Debug("Выполняется отключение световой сигнализации...");
             // Turn off the Light Alarm
             if (dataSet.Tables.Count > 0)
+            {
                 for (int i = 0; i < dataSet.Tables[dsTableName].Rows.Count; i++)
                 {
-                    comPort.Inquiry(serialPort, ledOFF, i);
+                    sendedMsg = comPort.Inquiry(serialPort, ledOFF, i);
                     Thread.Sleep(100);
                 }
+            }
             else
+            {
                 return;
+            }
         }
     }
 }

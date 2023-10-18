@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Ports;
-using System.Windows.Forms;
-using System.Data;
-using System.Threading;
-using NLog;
+﻿using Armstrong.WinServer.Models;
 using Armstrong.WinServer.Properties;
+using NLog;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Drawing;
+using System.IO.Ports;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace Armstrong.WinServer.Classes
 {
@@ -42,21 +44,21 @@ namespace Armstrong.WinServer.Classes
                 serialPort.Open();
                 return serialPort;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 logger.Error(e, "COM-port: Ошибка подключения к " + portName);
 
                 return null;
             }
         }
-        
+
         /// <summary>
         /// Выполняет запрос/отправку пакета в COM-port.
         /// </summary>
         /// <param name="serialPort">Объект SerialPort.</param>
         /// <param name="packages">Список пакетов для отправки, каждый из которых представляет собой массив из 8 байт.</param>
         /// <param name="inquiryAddress">Адрес устройства, на которой производится запрос/оправка.</param>
-        public void Inquiry(SerialPort serialPort, List<byte[]> packages, int inquiryAddress)
+        public DialogMessage Inquiry(SerialPort serialPort, List<byte[]> packages, int inquiryAddress)
         {
             if (serialPort.IsOpen)
             {
@@ -73,9 +75,20 @@ namespace Armstrong.WinServer.Classes
                     options.Show();
                 }
                 else
+                {
                     Application.Exit();
+                }
             }
+
             Thread.Sleep(100);
+
+            return new DialogMessage
+            {
+                TextColor = Color.Blue,
+                MessageType = MessageType.SendedSuccessfull,
+                MessageText = "Sending pkg is successfull",
+                PackageText = $"OUT:\t{BitConverter.ToString(packages[inquiryAddress])}",
+            };
         }
 
         /// <summary>
@@ -83,7 +96,7 @@ namespace Armstrong.WinServer.Classes
         /// </summary>
         /// <param name="serialPort">Объект SerialPort.</param>
         /// <param name="package">Пакет для отправки, представляющий обой массив из 8 байт, первый из которых - адрес.</param>
-        public void Inquiry(SerialPort serialPort, byte[] package)
+        public DialogMessage Inquiry(SerialPort serialPort, byte[] package)
         {
             if (serialPort.IsOpen)
             {
@@ -101,9 +114,20 @@ namespace Armstrong.WinServer.Classes
                     options.Show();
                 }
                 else
+                {
                     Application.Exit();
+                }
             }
+
             Thread.Sleep(100);
+
+            return new DialogMessage
+            {
+                TextColor = Color.Blue,
+                MessageType = MessageType.SendedSuccessfull,
+                MessageText = "Sending pkg is successfull",
+                PackageText = $"OUT:\t{BitConverter.ToString(package)}",
+            };
         }
 
         /// <summary>
@@ -112,16 +136,36 @@ namespace Armstrong.WinServer.Classes
         /// <param name="serialPort">Объект SerialPort.</param>
         /// <param name="inquiryAddress">Адрес устройства, от которого ожидается ответ.</param>
         /// <returns>Возвращает double значение количества импульсов полученных с устройства.</returns>
-        public double Answer(SerialPort serialPort, int inquiryAddress)
+        public DialogMessage Answer(SerialPort serialPort, int inquiryAddress)
         {
             var packageSize = serialPort.BytesToRead;
             var bufferSize = 8;
             var buffer = new byte[bufferSize];
+            var msg = new DialogMessage();
             double impulses = 0;
 
             if (packageSize != bufferSize)
             {
-                return 0;
+                msg.MessageType = MessageType.ReceivedError;
+                msg.MessageText = $"COM: Size error, pkg size = {packageSize}";
+                msg.TextColor = Color.Red;
+
+                for (var i = 0; i < packageSize; i++)
+                {
+                    try
+                    {
+                        buffer[i] = (byte)serialPort.ReadByte();
+                    }
+                    catch (Exception e)
+                    {
+                        logger.Error(e, "COM-port: ошибка в буфере пакетов, канал " + (inquiryAddress));
+                        MessageBox.Show(e.StackTrace);
+                    }
+                }
+
+                msg.PackageText = $"INP:\t{BitConverter.ToString(buffer)}";
+
+                return msg;
             }
 
             for (var i = 0; i < packageSize; i++)
@@ -143,13 +187,13 @@ namespace Armstrong.WinServer.Classes
                         buffer[stepIndex] = message;
                         stepIndex++;
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         logger.Error(e, "COM-port: ошибка в буфере пакетов, канал " + (inquiryAddress));
                         MessageBox.Show(e.StackTrace);
                     }
                 }
-                if(startRead && stepIndex == bufferSize)
+                if (startRead && stepIndex == bufferSize)
                 {
                     byte[] calculatedCRC = (new byte[2]);
                     byte[] receivedCRC = (new byte[2]);
@@ -168,11 +212,24 @@ namespace Armstrong.WinServer.Classes
                     else
                     {
                         logger.Debug("COM-port: Ошибка CRC: канал " + (inquiryAddress));
-                        return 0;
+
+                        msg.TextColor = Color.Red;
+                        msg.MessageType = MessageType.ReceivedError;
+                        msg.MessageText = $"COM: CRC16 error: received: {BitConverter.ToString(receivedCRC)}, calculated: {BitConverter.ToString(calculatedCRC)}";
+                        msg.PackageText = $"INP:\t{BitConverter.ToString(buffer)}";
+
+                        return msg;
                     }
                 }
             }
-            return impulses;
+
+            msg.TextColor = Color.Green;
+            msg.MessageType = MessageType.ReceivedSuccessfull;
+            msg.MessageText = "Receive pkg is successfull";
+            msg.PackageText = $"INP:\t{BitConverter.ToString(buffer)}";
+            msg.Value = impulses;
+
+            return msg;
         }
 
         /// <summary>
@@ -213,13 +270,15 @@ namespace Armstrong.WinServer.Classes
                     dataSet.Tables[dsTableName].Rows[inquiryAddress][Map.channel_value_unic_count] = ++valueCount;
                 }
                 else
+                {
                     dataSet.Tables[dsTableName].Rows[inquiryAddress][Map.channel_value_unic_count] = 1;
+                }
 
                 // color marking
                 // accident
                 if (value >= accident)
                 {
-                    dataSet.Tables[dsTableName].Rows[inquiryAddress][Map.channel_state] =  DetectorsInfo.StateAccident;
+                    dataSet.Tables[dsTableName].Rows[inquiryAddress][Map.channel_state] = DetectorsInfo.StateAccident;
                     dataSet.Tables[dsTableName].Rows[inquiryAddress][Map.channel_image_state] = Resources.accident_state;
                     state = DetectorsInfo.StateAccident;
                 }
@@ -253,7 +312,9 @@ namespace Armstrong.WinServer.Classes
                     }
                 }
                 else
+                {
                     dataSet.Tables[dsTableName].Rows[inquiryAddress][Map.channel_value_error_count] = 1;
+                }
 
                 return 0;
             }

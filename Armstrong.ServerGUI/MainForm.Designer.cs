@@ -32,20 +32,7 @@ namespace Armstrong.WinServer
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("МЭД");
-            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Воздух");
-            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Спец. контроль");
-            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Не работает");
-            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("Категория", new System.Windows.Forms.TreeNode[] {
-            treeNode1,
-            treeNode2,
-            treeNode3,
-            treeNode4});
-            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("Предаварийная");
-            System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("Аварийная");
-            System.Windows.Forms.TreeNode treeNode8 = new System.Windows.Forms.TreeNode("Уставки", new System.Windows.Forms.TreeNode[] {
-            treeNode6,
-            treeNode7});
+            this.packagesTextBox1 = new System.Windows.Forms.RichTextBox();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             dataGridViewCellStyle1.Format = "E3";
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
@@ -63,7 +50,6 @@ namespace Armstrong.WinServer
             this.checkSpecialSignalMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.visionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.treeView1 = new System.Windows.Forms.TreeView();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.globalId = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.id = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -202,7 +188,7 @@ namespace Armstrong.WinServer
             // 
             // splitContainer1.Panel1
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.treeView1);
+            this.splitContainer1.Panel1.Controls.Add(this.packagesTextBox1);
             // 
             // splitContainer1.Panel2
             // 
@@ -211,33 +197,14 @@ namespace Armstrong.WinServer
             this.splitContainer1.SplitterDistance = 137;
             this.splitContainer1.TabIndex = 2;
             // 
-            // treeView1
+            // packagesTextBox1
             // 
-            this.treeView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.treeView1.Location = new System.Drawing.Point(0, 0);
-            this.treeView1.Name = "treeView1";
-            treeNode1.Name = "med";
-            treeNode1.Text = "МЭД";
-            treeNode2.Name = "air";
-            treeNode2.Text = "Воздух";
-            treeNode3.Name = "specialcontrol";
-            treeNode3.Text = "Спец. контроль";
-            treeNode4.Name = "offline";
-            treeNode4.Text = "Не работает";
-            treeNode5.Checked = true;
-            treeNode5.Name = "category";
-            treeNode5.Text = "Категория";
-            treeNode6.Name = "pre_accident";
-            treeNode6.Text = "Предаварийная";
-            treeNode7.Name = "accident";
-            treeNode7.Text = "Аварийная";
-            treeNode8.Name = "warning_control";
-            treeNode8.Text = "Уставки";
-            this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode5,
-            treeNode8});
-            this.treeView1.Size = new System.Drawing.Size(137, 488);
-            this.treeView1.TabIndex = 0;
+            this.packagesTextBox1.Dock = System.Windows.Forms .DockStyle.Fill;
+            this.packagesTextBox1.Location = new System.Drawing.Point(0, 0);
+            this.packagesTextBox1.Name = "packagesTextBox1";
+            this.packagesTextBox1.Size = new System.Drawing.Size(137, 488);
+            this.packagesTextBox1.TabIndex = 0;
+            this.packagesTextBox1.Multiline = true;
             // 
             // dataGridView1
             // 
@@ -679,6 +646,7 @@ namespace Armstrong.WinServer
 
         #endregion
 
+        private System.Windows.Forms.RichTextBox packagesTextBox1;
         private System.IO.Ports.SerialPort serialPort1;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
@@ -687,7 +655,6 @@ namespace Armstrong.WinServer
         public System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.StatusStrip statusStrip1;
         public System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
-        private System.Windows.Forms.TreeView treeView1;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem checkChannelToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem rewindTapeToolStripMenuItem;
@@ -734,7 +701,7 @@ namespace Armstrong.WinServer
         private ToolStripMenuItem addChannelToolStripMenuItem1;
         private ToolStripMenuItem graphicToolStripMenuItem1;
 
-        public TreeView TreeView1 { get => treeView1; }
+        public RichTextBox PackagesTextBox1 { get => packagesTextBox1; }
     }
 }
 
