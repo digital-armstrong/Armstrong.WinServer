@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO.Ports;
 using System.Linq;
+using System.Runtime.Remoting;
+using System.Threading;
+using Armstrong.WinServer.Models;
 using NLog;
 
 namespace Armstrong.WinServer.Classes
@@ -10,7 +14,8 @@ namespace Armstrong.WinServer.Classes
     {
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         private readonly PackagesInitialization packInit = new PackagesInitialization();
-        private readonly ComPort comPort = new ComPort();             
+        private readonly ComPort comPort = new ComPort();         
+        private int TestRequestsCount { get; set; } = 30;
 
         /// <summary>
         /// Осуществляет перемотку ленты в группе блоков детектирования с лентопротяжным механизмом.
@@ -57,20 +62,61 @@ namespace Armstrong.WinServer.Classes
         /// </summary>
         /// <param name="serialPort">Объект COM-порта, через который осуществляется обмен пакетами.</param>
         /// <param name="address">Адрес блока детектирования.</param>
-        public void Rewind(SerialPort serialPort, int address)
+        public void Rewind(SerialPort serialPort, int address, DataRow channelInfo)
         {
             logger.Debug($"Осуществляется перемотка ленты канала: {address}.");
 
-            var package = packInit.GeneratePackages(address, Function.StartService, Operation.Write, ActionType.Rewind);
+            var initRewindPkg = packInit.GeneratePackages(address, Function.StartService, Operation.Write, ActionType.Rewind);
+            var fetchFieldState = packInit.GeneratePackages(address, Function.StartService, Operation.Read);
+            var fetchValuePkg = packInit.GeneratePackages(address, Function.GetValue);
+
             if (serialPort.IsOpen)
             {
                 logger.Debug($"--- {serialPort.PortName} уже был открыт.");
 
-                for (var i = 0; i < package.Count(); i++)
+                for (var i = 0; i < initRewindPkg.Count(); i++)
                 {
-                    logger.Debug($"------ Попытка отправки команды перемотки [{BitConverter.ToString(package[0])}] на канал {address}.");
-                    comPort.Inquiry(serialPort, package, i);
+                    logger.Debug($"------ Попытка отправки команды перемотки [{BitConverter.ToString(initRewindPkg[0])}] на канал {address}.");
+                    comPort.Inquiry(serialPort, initRewindPkg, i);
                     logger.Debug($"------ Канал {address} - успешно.");
+                }
+
+                for (var i = 0; i < fetchValuePkg.Count(); i++)
+                {
+                    NewShiftReport report = new NewShiftReport(channelAddress: address,
+                                                               minLimit: (double)channelInfo[Map.block_min_nuclid],
+                                                               maxLimit: (double)channelInfo[Map.block_max_nuclid],
+                                                               impulsesBufferSize: TestRequestsCount,
+                                                               isDetectorHaveField: true);
+
+                    for (var j = 0; j < TestRequestsCount; i++)
+                    {
+                        comPort.Inquiry(serialPort, fetchValuePkg[i]);
+                        report.ImpulsesBuffer[j] = comPort.Answer(serialPort, address);
+                        
+                        Thread.Sleep(900);
+                    }
+
+                    comPort.Inquiry(serialPort, fetchFieldState[i]);
+                    var _fieldRiwindResult = comPort.AnswerRaw(serialPort, address);
+
+                    if ( _fieldRiwindResult != null )
+                    {
+                        report.IsLineDown = true;
+                    }
+                    else
+                    {
+                        report.IsFielRewind = _fieldRiwindResult[4] == 0x01;
+                    }
+
+                    var _avgImpulsesValue = report.GetAvgImpulsesValue();
+                    var _isSignalValid = report.GetIsSignalValid();
+
+                    logger.Debug($"------ Результаты проверки {address}");
+                    logger.Debug($"--------- Перемотка: {report.IsFielRewind}");
+                    logger.Debug($"--------- Сигнал: {report.IsSignallValid}");
+                    logger.Debug($"--------- Отказ линии: {report.IsLineDown}");
+                    logger.Debug($"--------- Импульсов: {report.AvgImpulsesValue} имп/с");
                 }
             }
             else
@@ -79,10 +125,10 @@ namespace Armstrong.WinServer.Classes
                 logger.Debug($"--- Попытка открыть порт {serialPort.PortName}.");
                 serialPort.Open();
                 logger.Debug($"--- {serialPort.PortName} открыт.");
-                for (var i = 0; i < package.Count(); i++)
+                for (var i = 0; i < initRewindPkg.Count(); i++)
                 {
-                    logger.Debug($"------ Попытка отправки команды перемотки [{BitConverter.ToString(package[0])}] на канал {address}.");
-                    comPort.Inquiry(serialPort, package, i);
+                    logger.Debug($"------ Попытка отправки команды перемотки [{BitConverter.ToString(initRewindPkg[0])}] на канал {address}.");
+                    comPort.Inquiry(serialPort, initRewindPkg, i);
                     logger.Debug($"------ Канал {address} - успешно.");
                 }
                 logger.Debug($"--- Попытка закрыть порт {serialPort.PortName}.");

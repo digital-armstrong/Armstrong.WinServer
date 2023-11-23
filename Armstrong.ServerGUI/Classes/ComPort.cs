@@ -176,6 +176,73 @@ namespace Armstrong.WinServer.Classes
         }
 
         /// <summary>
+        /// Выполняет чтение пакета из COM-port.
+        /// </summary>
+        /// <param name="serialPort">Объект SerialPort.</param>
+        /// <param name="inquiryAddress">Адрес устройства, от которого ожидается ответ.</param>
+        /// <returns>Возвращает byte[] значение количества импульсов полученных с устройства.</returns>
+        public byte[] AnswerRaw(SerialPort serialPort, int inquiryAddress)
+        {
+            var packageSize = serialPort.BytesToRead;
+            var bufferSize = 8;
+            var buffer = new byte[bufferSize];
+
+            if (packageSize != bufferSize)
+            {
+                return null;
+            }
+
+            for (var i = 0; i < packageSize; i++)
+            {
+                var message = (byte)serialPort.ReadByte();
+                var messageReceived = new byte[packageSize];
+
+                messageReceived[i] = message;
+
+                if (inquiryAddress == messageReceived[0])
+                {
+                    stepIndex = 0;
+                    startRead = true;
+                }
+                if (startRead && stepIndex < packageSize)
+                {
+                    try
+                    {
+                        buffer[stepIndex] = message;
+                        stepIndex++;
+                    }
+                    catch (Exception e)
+                    {
+                        logger.Error(e, "COM-port: ошибка в буфере пакетов, канал " + (inquiryAddress));
+                        MessageBox.Show(e.StackTrace);
+                    }
+                }
+                if (startRead && stepIndex == bufferSize)
+                {
+                    byte[] calculatedCRC = (new byte[2]);
+                    byte[] receivedCRC = (new byte[2]);
+
+                    receivedCRC[0] = buffer[6];
+                    receivedCRC[1] = buffer[7];
+
+                    PackageControlSum.CalculationCRC(buffer, ref calculatedCRC);
+
+                    int controlCRC = BitConverter.ToInt16(calculatedCRC, 0) - BitConverter.ToInt16(receivedCRC, 0);
+
+                    if (controlCRC == 0)
+                    {
+                    }
+                    else
+                    {
+                        logger.Debug("COM-port: Ошибка CRC: канал " + (inquiryAddress));
+                        return null;
+                    }
+                }
+            }
+            return buffer;
+        }
+
+        /// <summary>
         /// Выполняет обработку полученного пакета из COM-port и сохранение данных в DataSet.
         /// </summary>
         /// <param name="dataSet">Объект DataSet, в котором хранится temp-таблица monitor.</param>

@@ -6,6 +6,7 @@ using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Linq;
 using Armstrong.WinServer.Properties;
 using Armstrong.WinServer.Classes;
 using NLog;
@@ -673,7 +674,9 @@ namespace Armstrong.WinServer
             task = Task.Run(() =>
             {
                 NewShift newShift = new NewShift();
-                newShift.Rewind(serialPort, address);
+                var channelInfo = dataSet.Tables[dsTableName].AsEnumerable().FirstOrDefault(row => row.Field<int>(Map.channel_global_id) == channelGlobalId);
+                
+                newShift.Rewind(serialPort, address, channelInfo);
                 Invoke((MethodInvoker)delegate
                 {
                     toolStripStatusLabel1.Text = ($"Перемотка ленты канала № {address}");
