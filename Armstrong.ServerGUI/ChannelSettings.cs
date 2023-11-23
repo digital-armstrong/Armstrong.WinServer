@@ -1,9 +1,8 @@
-using System;
-using System.Data;
-using System.Data.SqlClient;
-using System.Windows.Forms;
 using Armstrong.WinServer.Classes;
 using Npgsql;
+using System;
+using System.Globalization;
+using System.Windows.Forms;
 
 namespace Armstrong.WinServer
 {
@@ -20,7 +19,7 @@ namespace Armstrong.WinServer
 
         private void ChangeChannel_Shown(object sender, EventArgs e)
         {
-            MainForm main = this.Owner as MainForm;
+            MainForm main = Owner as MainForm;
 
             switch ((int)main.dataGridView1.SelectedRows[0].Cells[Map.block_type].Value)
             {
@@ -66,18 +65,22 @@ namespace Armstrong.WinServer
 
         private void nameDb_ComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if(nameDb_ComboBox.SelectedIndex == 0 || 
-               nameDb_ComboBox.SelectedIndex == 11 || 
-               nameDb_ComboBox.SelectedIndex == 12 || 
+            if (nameDb_ComboBox.SelectedIndex == 0 ||
+               nameDb_ComboBox.SelectedIndex == 11 ||
+               nameDb_ComboBox.SelectedIndex == 12 ||
                nameDb_ComboBox.SelectedIndex == 13)
             {
                 type_ComboBox.Text = "Лентопротяж. механизм";
                 if (nameDb_ComboBox.SelectedIndex == 0)
+                {
                     coefficient_TBox.Text = "2,0592";
+                }
                 else
+                {
                     coefficient_TBox.Text = "1";
+                }
             }
-            if(nameDb_ComboBox.SelectedIndex == 1 || 
+            if (nameDb_ComboBox.SelectedIndex == 1 ||
                nameDb_ComboBox.SelectedIndex == 2)
             {
                 type_ComboBox.Text = "Временной";
@@ -127,9 +130,9 @@ namespace Armstrong.WinServer
 
         private void Save_Button_Click(object sender, EventArgs e)
         {
-            MainForm main = this.Owner as MainForm;
+            MainForm main = Owner as MainForm;
 
-            if(
+            if (
                 string.IsNullOrEmpty(coefficient_TBox.Text) ||
                 string.IsNullOrEmpty(preAccident_TBox.Text) ||
                 string.IsNullOrEmpty(accident_TBox.Text) ||
@@ -142,12 +145,12 @@ namespace Armstrong.WinServer
                 return;
             }
 
-            Double coefficientParameter = Convert.ToDouble(coefficient_TBox.Text.Replace(".", ","));
-            Double preAccidentParameter = Convert.ToDouble(preAccident_TBox.Text.Replace(".", ","));
-            Double accidentParameter = Convert.ToDouble(accident_TBox.Text.Replace(".", ","));
-            Double minParameter = Convert.ToDouble(min_TBox.Text.Replace(".", ","));
-            Double maxParameter = Convert.ToDouble(max_TBox.Text.Replace(".", ","));
-            Double backgroundParameter = Convert.ToDouble(background_TBox.Text.Replace(".", ","));
+            Double coefficientParameter = Double.Parse(coefficient_TBox.Text, CultureInfo.CurrentCulture);
+            Double preAccidentParameter = Double.Parse(preAccident_TBox.Text, CultureInfo.CurrentCulture);
+            Double accidentParameter = Double.Parse(accident_TBox.Text, CultureInfo.CurrentCulture);
+            Double minParameter = Double.Parse(min_TBox.Text, CultureInfo.CurrentCulture);
+            Double maxParameter = Double.Parse(max_TBox.Text, CultureInfo.CurrentCulture);
+            Double backgroundParameter = Double.Parse(background_TBox.Text, CultureInfo.CurrentCulture);
 
             switch (type_ComboBox.Text)
             {

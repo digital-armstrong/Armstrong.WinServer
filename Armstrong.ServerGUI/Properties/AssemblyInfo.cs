@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // Общие сведения об этой сборке предоставляются следующим набором
 // набора атрибутов. Измените значения этих атрибутов для изменения сведений,
 // связанных со сборкой.
-[assembly: AssemblyTitle("ARMStrong v1.1.4.2060")]
+[assembly: AssemblyTitle("ARMStrong v1.1.4.2061")]
 [assembly: AssemblyDescription("Автоматизированная Система Радиационного Контроля")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Owls' Catcher ™")]
-[assembly: AssemblyProduct("ARMStrong Windows Server v1.1.4.2060")]
+[assembly: AssemblyProduct("ARMStrong Windows Server v1.1.4.2061")]
 [assembly: AssemblyCopyright("Copyright © GNU-GPLv3, Free Software Foundation")]
 [assembly: AssemblyTrademark("ARMStrong ™")]
 [assembly: AssemblyCulture("")]
@@ -32,6 +32,6 @@ using System.Runtime.InteropServices;
 // Можно задать все значения или принять номера сборки и редакции по умолчанию 
 // используя "*", как показано ниже:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.1.4.2060")]
+[assembly: AssemblyVersion("1.1.4.2061")]
 [assembly: AssemblyFileVersion("1.1.4")]
 [assembly: NeutralResourcesLanguage("ru")]

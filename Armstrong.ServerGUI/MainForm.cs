@@ -1,17 +1,17 @@
+using Armstrong.WinServer.Classes;
+using Armstrong.WinServer.Models;
+using Armstrong.WinServer.Properties;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.IO.Ports;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Linq;
-using Armstrong.WinServer.Properties;
-using Armstrong.WinServer.Classes;
-using NLog;
-using System.Reflection;
-using Armstrong.WinServer.Models;
 
 namespace Armstrong.WinServer
 {
@@ -178,7 +178,9 @@ namespace Armstrong.WinServer
                 Thread.Sleep(60000);
 
                 foreach (int address in addressList)
+                {
                     logger.Info("System: успешная перемотка ленты канала {0}", address);
+                }
 
                 if (serialPort.IsOpen)
                 {
@@ -247,19 +249,25 @@ namespace Armstrong.WinServer
                         });
 
                         if (token.IsCancellationRequested)
+                        {
                             throw new TaskCanceledException(SerialPortTask);
+                        }
                     }
 
                     logger.Debug("Запускается цикл опроса...");
                     while (serialPort.IsOpen)
                     {
                         if (token.IsCancellationRequested)
+                        {
                             throw new TaskCanceledException(SerialPortTask);
+                        }
 
                         for (int i = 0; i < dataSet.Tables[dsTableName].Rows.Count; i++)
                         {
                             if ((int)dataSet.Tables[dsTableName].Rows[i][Map.channel_power_state] == DetectorsInfo.Power_OFF)
+                            {
                                 continue;
+                            }
 
                             comPort.Inquiry(serialPort, valuePackages, i);
                             impulses = comPort.Answer(serialPort, i + 1);
@@ -273,9 +281,14 @@ namespace Armstrong.WinServer
                                     break;
                                 case DetectorsInfo.StateAccident:
                                     if ((bool)dataSet.Tables[dsTableName].Rows[i][Map.channel_special_control])
+                                    {
                                         comPort.Inquiry(serialPort, SendSpecialSignal, i);
+                                    }
                                     else
+                                    {
                                         comPort.Inquiry(serialPort, ledRED, i);
+                                    }
+
                                     break;
                                 case DetectorsInfo.StatePreAccident:
                                     comPort.Inquiry(serialPort, ledYEL, i);
@@ -289,7 +302,7 @@ namespace Armstrong.WinServer
                             }
                         }
 
-                        foreach (DataRow row in this.dataSet.Tables[this.dsTableName].Rows)
+                        foreach (DataRow row in dataSet.Tables[dsTableName].Rows)
                         {
                             int id = Convert.ToInt32(row[Map.channel_global_id]);
                             int count = (int)row[Map.channel_value_unic_count];
@@ -318,10 +331,10 @@ namespace Armstrong.WinServer
 
                             if (impulsesValue != 0)
                             {
-                                this.sql.Insert(historyTable, id, systemValue, dateTime);
+                                sql.Insert(historyTable, id, systemValue, dateTime);
                             }
 
-                            this.sql.Update(updater);
+                            sql.Update(updater);
                         }
 
                         int timeToAsk = (int)SettingsVariable.GetValue<float>(Constants.SettingName.TimeToAsk);
@@ -329,7 +342,9 @@ namespace Armstrong.WinServer
                         for (int i = 0; i < timeToAsk; i++)
                         {
                             if (token.IsCancellationRequested)
+                            {
                                 throw new TaskCanceledException(SerialPortTask);
+                            }
 
                             Thread.Sleep(1000);
                         }
@@ -342,7 +357,7 @@ namespace Armstrong.WinServer
                 {
                     logger.Debug($"{MethodBase.GetCurrentMethod().Name}:Задача была прервана");
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     logger.Debug(e);
                 }
@@ -404,7 +419,9 @@ namespace Armstrong.WinServer
                 try
                 {
                     if (token.IsCancellationRequested)
+                    {
                         throw new TaskCanceledException(task);
+                    }
 
                     int count = 0;
                     if (dataSet.Tables.Count > 0)
@@ -457,7 +474,9 @@ namespace Armstrong.WinServer
                             dataSet.Tables[dsTableName].Rows[i][Map.value_not_system] = 0;
 
                             if ((bool)dataSet.Tables[dsTableName].Rows[i][Map.channel_special_control])
+                            {
                                 dataGridView1.Rows[i].Cells[Map.channel_special_control].Value = true;
+                            }
 
                             switch ((int)dataSet.Tables[dsTableName].Rows[i][Map.channel_state])
                             {
@@ -498,7 +517,7 @@ namespace Armstrong.WinServer
             // 1. Остановить поток опроса
             // 2. Закрыть COM-port
             // 3. Сообщить приложению, что будет совершен респринг (restart = true)
-            
+
             logger.Debug("Вызвано метод настроек приложения.");
 
             StopExecute();
@@ -547,7 +566,9 @@ namespace Armstrong.WinServer
                 }
             }
             else
+            {
                 return;
+            }
         });
 
         // Кнопка Настройки в верхней панели
@@ -644,6 +665,14 @@ namespace Armstrong.WinServer
         private async void rewindTapeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             logger.Debug("Вызван метод перемотки кадра одного канала.");
+
+            var _device_type = (int)dataGridView1.SelectedRows[0].Cells[Map.block_type].Value;
+
+            if (_device_type != 3)
+            {
+                return;
+            }
+
             StopExecute();
 
             Invoke((MethodInvoker)delegate
@@ -665,7 +694,7 @@ namespace Armstrong.WinServer
             });
 
             int address = (int)dataGridView1.SelectedRows[0].Cells[Map.channel_id].Value;
-            var channelGlobalId = Convert.ToInt32(this.dataGridView1.SelectedRows[0].Cells[Map.channel_global_id].Value);
+            var channelGlobalId = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells[Map.channel_global_id].Value);
 
             string historyTable = SettingsVariable.GetValue(Constants.EnvirovmentVariableName.HistoryTable);
             sql.Insert(table: historyTable, id: channelGlobalId, value: 0, date: DateTime.Now);
@@ -675,13 +704,15 @@ namespace Armstrong.WinServer
             {
                 NewShift newShift = new NewShift();
                 var channelInfo = dataSet.Tables[dsTableName].AsEnumerable().FirstOrDefault(row => row.Field<int>(Map.channel_global_id) == channelGlobalId);
-                
-                newShift.Rewind(serialPort, address, channelInfo);
+
                 Invoke((MethodInvoker)delegate
                 {
                     toolStripStatusLabel1.Text = ($"Перемотка ленты канала № {address}");
                 });
-                Thread.Sleep(60000);
+
+                newShift.Rewind(serialPort, address, channelInfo);
+
+                Thread.Sleep(1000);
 
                 logger.Info($"System: успешная перемотка ленты канала {address}");
 
@@ -729,7 +760,9 @@ namespace Armstrong.WinServer
             task = Task.Run(() =>
             {
                 if (!serialPort.IsOpen)
+                {
                     serialPort.Open();
+                }
 
                 id--; // так как нумерация каналов с 1, а нумерация в списке/dgv/массивве с 0
 
@@ -902,11 +935,11 @@ namespace Armstrong.WinServer
         {
             logger.Debug("Вызвано окно \"Вид\".");
             GridVision gridVision = new GridVision(this);
-            this.AddOwnedForm(gridVision);
+            AddOwnedForm(gridVision);
             gridVision.Show();
         }
         #endregion
-        
+
         // Selecting rows with Right Mouse Button Click
         private void DataGridView1_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
         {
@@ -928,8 +961,11 @@ namespace Armstrong.WinServer
             switch (dataGridView1.SelectedRows.Count != 1)
             {
                 case true:
-                    for(int i = 0; i < dataGridView1.SelectedRows.Count; i++)
+                    for (int i = 0; i < dataGridView1.SelectedRows.Count; i++)
+                    {
                         selectedId.Add(Convert.ToInt32(dataGridView1.SelectedRows[i].Cells[Map.channel_global_id].Value));
+                    }
+
                     break;
                 case false:
                     selectedId.Add(Convert.ToInt32(dataGridView1.SelectedRows[0].Cells[Map.channel_global_id].Value));
@@ -975,13 +1011,17 @@ namespace Armstrong.WinServer
             logger.Debug("Выполняется отключение световой сигнализации...");
             // Turn off the Light Alarm
             if (dataSet.Tables.Count > 0)
+            {
                 for (int i = 0; i < dataSet.Tables[dsTableName].Rows.Count; i++)
                 {
                     comPort.Inquiry(serialPort, ledOFF, i);
                     Thread.Sleep(100);
                 }
+            }
             else
+            {
                 return;
+            }
         }
     }
 }

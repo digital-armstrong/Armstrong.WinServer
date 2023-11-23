@@ -1,7 +1,7 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
 
 namespace Armstrong.WinServer.Classes
 {
@@ -26,7 +26,7 @@ namespace Armstrong.WinServer.Classes
     ///                     запись, 
     ///                     чтение.
     /// </summary>
-    enum Operation : byte 
+    enum Operation : byte
     {
         Write = 0x01,
         Read = 0x02
@@ -103,10 +103,14 @@ namespace Armstrong.WinServer.Classes
         /// <returns>Возвращает список 8-ми байтовых пакетов.</returns>
         public List<byte[]> GeneratePackages(int count, Function function, LedColor color, ActionType sendSpecialSignal = 0x00)
         {
-            if(sendSpecialSignal == 0x00)
+            if (sendSpecialSignal == 0x00)
+            {
                 logger.Debug($"Сборка пакетов \"{function}\" для управления световой сигнализацией с сигналом \"{color}\"...");
+            }
             else
+            {
                 logger.Debug($"Сборка пакетов \"{function}\" для управления световой сигнализацией с сигналом \"{color}\" и сигналом спец. контроля...");
+            }
 
             byte[] CRC = new byte[2];
             byte[] message = new byte[] { 0x00, (byte)function, (byte)color, (byte)sendSpecialSignal, 0x00, 0x00, 0x00, 0x00 };
@@ -155,6 +159,60 @@ namespace Armstrong.WinServer.Classes
 
             return packages;
         }
+
+        /// <summary>
+        /// Генерирует 8-ми байтовые пакеты для запроса результата перемотки ленты БДАС-02П.
+        /// </summary>
+        /// <param name="count">Количество каналов.</param>
+        /// <param name="function">Байт типа выполняемой функции.</param>
+        /// <param name="operation">Байт типа выполняемой операции.</param>
+        /// <returns>Возвращает список 8-ми байтовых пакетов.</returns>
+        public List<byte[]> GenerateSinglePackage(int address, Function function, Operation operation)
+        {
+            byte[] CRC = new byte[2];
+            byte[] message = new byte[] { (byte)address, (byte)function, (byte)operation, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+            PackageControlSum.CalculationCRC(message, ref CRC);
+
+            List<byte[]> package = new List<byte[]>
+            {
+                new byte[] { (byte)address, (byte)function, (byte)operation, 0x00, 0x00, 0x00, CRC[0], CRC[1] }
+            };
+
+            return package;
+        }
+
+        public List<byte[]> GenerateSinglePackage(int address, Function function, Operation operation, ActionType actionType)
+        {
+            byte[] CRC = new byte[2];
+            byte[] message = new byte[] { (byte)address, (byte)function, (byte)operation, (byte)actionType, 0x00, 0x00, 0x00, 0x00 };
+
+            PackageControlSum.CalculationCRC(message, ref CRC);
+
+            List<byte[]> package = new List<byte[]>
+            {
+                new byte[] { (byte)address, (byte)function, (byte)operation, (byte)actionType, 0x00, 0x00, CRC[0], CRC[1] }
+            };
+
+            return package;
+        }
+
+        public List<byte[]> GenerateSinglePackage(int address, Function function)
+        {
+
+            byte[] CRC = new byte[2];
+            byte[] message = new byte[] { (byte)address, (byte)function, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+            PackageControlSum.CalculationCRC(message, ref CRC);
+
+            List<byte[]> package = new List<byte[]>
+            {
+                new byte[] { (byte)address, (byte)function, 0x00, 0x00, 0x00, 0x00, CRC[0], CRC[1] }
+            };
+
+            return package;
+        }
+
         /// <summary>
         /// Генерирует 8-ми байтовые сервисные пакеты.
         /// </summary>
@@ -166,7 +224,7 @@ namespace Armstrong.WinServer.Classes
         public List<byte[]> GeneratePackages(int count, Function function, Operation operation, ActionType actionType)
         {
             logger.Debug($"Сборка \"{function}\" пакетов для операции \"{operation}\" и типа выполняемой задачи \"{actionType}\"...");
-            
+
             byte[] CRC = new byte[2];
             byte[] message = new byte[] { 0x00, (byte)function, (byte)operation, (byte)actionType, 0x00, 0x00, 0x00, 0x00 };
 
